@@ -1,10 +1,71 @@
 import std.stdio,core.stdc.stdlib; 
-
-bool DEBUG=false;
+string s="";
+enum TOK{
+	lparen,
+	rparen,
+	rcparen,
+	lcparen,
+	EOF,
+	equal,
+	notequal,
+	assign,
+	division,
+	keyword,
+	identifier,
+	number,
+	semicolon,
+	tilde,
+	mod,
+	notimplementet,
+	comma,
+	newline,
+	space,
+	tab,
+	string,
+	less,
+	big,
+	bigequal,
+	lessequal,
+	star,
+	minus,
+	plus,
+	and,
+	or,
+	cha,
+	dot,
+}
 
 string charToString(int c){
-	if(DEBUG) write("Called CharToString with argument: "~intToString(c));
-	if(c==65) return "A";
+	if(c==32) return " ";
+	else if(c==33) return "!";
+	else if(c==34) return "\"";
+	else if(c==37) return "%";
+	else if(c==38) return "&";
+	else if(c==39) return "'";
+	else if(c==40) return "(";
+	else if(c==41) return ")";
+	else if(c==42) return "*";
+	else if(c==43) return "+";
+	else if(c==44) return ",";
+	else if(c==45) return "-";
+	else if(c==46) return ".";
+	else if(c==47) return "/";
+	else if(c==48) return "0";
+	else if(c==49) return "1";
+	else if(c==50) return "2";
+	else if(c==51) return "3";
+	else if(c==52) return "4";
+	else if(c==53) return "5";
+	else if(c==54) return "6";
+	else if(c==55) return "7";
+	else if(c==56) return "8";
+	else if(c==57) return "9";
+	else if(c==58) return ":";
+	else if(c==59) return ";";
+	else if(c==60) return "<";
+	else if(c==61) return "=";
+	else if(c==62) return ">";
+	else if(c==65) return "A";
 	else if(c==66) return "B";
 	else if(c==67) return "C";
 	else if(c==68) return "D";
@@ -30,6 +91,7 @@ string charToString(int c){
 	else if(c==88) return "Z";
 	else if(c==89) return "Y";
 	else if(c==90) return "Z";
+	else if(c==92) return "\\";
 	else if(c==97) return "a";
 	else if(c==98) return "b";
 	else if(c==99) return "c";
@@ -56,8 +118,11 @@ string charToString(int c){
 	else if(c==120) return "x";
 	else if(c==121) return "y";
 	else if(c==122) return "z";
-	kill("charToString: Number needs to be between 65 and 90 or 97 and 122");	
-	return "";
+	else if(c==123) return "{";
+	else if(c==124) return "|";
+	else if(c==125) return "}";
+	else if(c==126) return "~";
+	assert(0,intToString(c)~" charToString: Number needs to be between 65 and 90 or 97 and 122");
 }
 
 string digitToString(int i){
@@ -71,8 +136,7 @@ string digitToString(int i){
 	else if(i==7) return "7";
 	else if(i==8) return "8";
 	else if(i==9) return "9";
-	kill("digitToString: i needs to be between 0 and 9");
-	return "";
+	assert(0,intToString(i)~"digitToString: i needs to be between 0 and 9");
 }
 
 int charToDigit(int i){
@@ -86,15 +150,17 @@ int charToDigit(int i){
 	else if(i==55) return 7;
 	else if(i==56) return 8;
 	else if(i==57) return 9;
-	kill("CharToDigit: char needs to be between 48 and 57");
-	return 0;
+	assert(0,"CharToDigit: char needs to be between 48 and 57");
 }
 
 string intToString(int i){
+	if(i==0) return "0";
 	string s="";
 	bool negative=false;
-	if(i<0) negative=true;
-	i=i*-1;
+	if(i<0){
+		negative=true;
+		i=i*-1;
+	}
 	while(i!=0){
 		int temp=i%10;
 		s= digitToString(temp)~s;
@@ -105,22 +171,39 @@ string intToString(int i){
 }
 
 void kill(string s){
-	print("\n"~intToString(lineNumber) ~": " ~ s~'\n');
+	print("\n"~intToString(lineNumber) ~": " ~ s~"\n");
 	exit(-1);
 }
 void print(string s){
-	if(s=="\n") writeln();
-	else write(s~" ");
+	write(s);
+}
+void print(TOK t){
+	write(t);
 }
 
 int getNextChar(){
 	int c;
-	c=getchar();	
+	characterNumber=characterNumber+1;
+	if(nextChar!=0){
+		c=nextChar;
+		nextChar=0;
+	}
+	else c=getchar();	
 	return c;
 }
 
+int peakNextChar(){
+	assert(nextChar==0,"can't peak twice");
+	nextChar=getNextChar();
+	return nextChar;
+}
+
 bool isChar(int c){
-	return (c>= 65 && c<= 122);
+	return (c>= 65 && c<= 90) || (c>=97 && c<=122);
+}
+
+bool isUnderscore(int c){
+	return c==95;
 }
 
 bool isDigit(int c){
@@ -148,132 +231,207 @@ bool isKeyword(string s){
 		(s=="char")||
 		(s=="true")||
 		(s=="false")||
+		(s=="enum")||
+		(s=="assert")||
 		(s=="string");
 }
 
 int lineNumber=1;
-int main(){
-	bool mightBeEqual=false;
-	bool mightBeNotEqual=false;
-	bool mightBeComment=false;
-	bool workingOnString=false;
-	bool workingOnNumber=false;
-	string currentString;
-	string currentNumber;
-	while(true){
-		int c=getNextChar();
-		if(mightBeEqual){
-			mightBeEqual=false;
-			if(c=='='){
-				print("EQUAL ");
-				continue;
-			}
-			else print("ASSIGN ");
+int characterNumber=0;
+int nextChar=0;
+
+struct tok{
+	TOK tok;
+	string value;
+	int line;
+	int characterNumber;
+}
+tok getNextToken(){
+	int c=getNextChar();
+	if(c=='/'){
+		//It is a line comment
+		int next=peakNextChar();
+		if(next=='/'){
+			getNextChar();
+			//Eat all chars til we reach EndOfLine
+			eatRestOfLine();
+			return getNextToken();
 		}
-		if(mightBeNotEqual){
-			mightBeNotEqual=false;
-			if(c=='='){
-				print("NOTEQUAL");
-				continue;
-			}
-			else kill("! but not followed by =");
-		}
-		if(mightBeComment){
-			mightBeComment=false;
-			//It is a line comment
-			if(c=='/'){
-				//Eat all chars til we reach EndOfLine
-				eatRestOfLine();
-				continue;
-			}
-			//It is a block comment
-			else if(c=='*'){
-				//Eat all chars till we reach */
-				while(true){
-					c=getNextChar();	
-					if(c=='*'){
-						c=getNextChar();
-						if(c=='/'){
-							break;		
-						}
+		//It is a block comment
+		else if(next=='*'){
+
+			//Eat all chars till we reach */
+			while(true){
+				c=getNextChar();	
+				if(c=='*'){
+					c=getNextChar();
+					if(c=='/'){
+						break;		
 					}
 				}
-				continue;
 			}
-			//This should not happen
-			else{
-				print("DIVISION");
-			}
+			return getNextToken();
 		}
-		if(workingOnString){
-			if(isCharOrDigit(c)){
+		else{
+			return tok(TOK.division,"",lineNumber,characterNumber);
+		}
+	}
+	else if(c=='\''){
+		string s;
+		if(peakNextChar()=='\\'){
+			getNextChar();	
+			s=charToString(getNextChar());
+		}
+		s= charToString(getNextChar());
+		getNextChar();	
+		return tok(TOK.cha,"",lineNumber,characterNumber);
+
+	}
+	else if(c=='"'){
+		string currentString="";
+		while(true){
+			c=getNextChar();
+			if(c=='\\'){
+				int next=getNextChar();
+				if(next=='\"'){
+					currentString= currentString~charToString('"');
+					continue;
+				}
+				else if(next=='\\'){
+					currentString= currentString~charToString('"');
+					continue;
+				}
+			}
+			if(c=='"') break;
+			currentString=currentString~charToString(c);
+		}
+		return tok(TOK.string,currentString,lineNumber,characterNumber);
+	}
+	else if(isChar(c) || isUnderscore(c)){
+		string currentString= charToString(c);
+		c=peakNextChar();
+		while(true){
+			if(isChar(c) || isUnderscore(c) || isDigit(c)){
+				getNextChar();
 				currentString=currentString~charToString(c);
-				continue;
+				c=peakNextChar();
 			}
-			else{
-				if(currentString=="import") eatRestOfLine();
-				else if(isKeyword(currentString)){
-					print(currentString);
-				}
-				else{
-					print("id("~currentString~")");
-				}
-				workingOnString=false;
-				currentString="";
-			}
+			else break;
 		}
-		if(workingOnNumber){
+		if(currentString=="import"){
+			eatRestOfLine();
+			return getNextToken();
+		}
+		else if(isKeyword(currentString)){
+			return tok(TOK.keyword,currentString,lineNumber,characterNumber);
+		}
+		else{
+
+			return tok(TOK.identifier,currentString,lineNumber,characterNumber);
+		}
+
+	}
+	else if(isDigit(c)){
+		string currentNumber=digitToString(charToDigit(c));
+		c=peakNextChar();
+		while(true){
 			if(isDigit(c)){
-				currentNumber=currentNumber~charToString(c);			
-				continue;
+				getNextChar();
+				currentNumber=currentNumber~digitToString(charToDigit(c));
+				c=peakNextChar();
 			}
 			else{
-				print("NUMBER("~currentNumber~")");
-				currentNumber="";
-				workingOnNumber=false;
+				return tok(TOK.number,currentNumber,lineNumber,characterNumber);
 			}
 		}
-		//If c is tab continue
-		if(c=='\t') continue;
+	}
+	//If c is tab continue
+	else if(c=='\t') return tok(TOK.tab,"",lineNumber,characterNumber);
 
-		//If c is space
-		else if(c==' ') continue;
+	//If c is space
+	else if(c==' ') return tok(TOK.space,"",lineNumber,characterNumber);
 
-		//If c is newline continue
-		else if(c=='\n'){
-			lineNumber=lineNumber+1;
-			print("\n");
-		}
+	//If c is newline continue
+	else if(c=='\n'){
+		lineNumber=lineNumber+1;
+		characterNumber=0;
+		return tok(TOK.newline,"",lineNumber,characterNumber);
+	}
 
-		//This could be a comment
-		else if(c=='/'){
-			mightBeComment=true;
+	//This could be a comment
+	else if(c=='='){
+		if(peakNextChar()=='='){
+			getNextChar();
+			return tok(TOK.equal,"",lineNumber,characterNumber);
 		}
-		else if(c=='='){
-			mightBeEqual=true;
+		else return tok(TOK.assign,"",lineNumber,characterNumber);
+	}
+	else if(c=='!'){
+		if(peakNextChar()=='='){
+			getNextChar();
+			return tok(TOK.notequal,"",lineNumber,characterNumber);
 		}
-		else if(c=='!'){
-			mightBeNotEqual=true;
+		else kill("! but not followed by =");
+	}
+	else if(c=='<'){
+		if(peakNextChar()=='='){
+			getNextToken();	
+			return  tok(TOK.lessequal,"",lineNumber,characterNumber);
 		}
-		else if(c==';') print("SEMICOLON ");
-		else if(c=='(') print("LPAREN ");
-		else if(c==')') print("RPAREN ");
-		else if(c=='}') print("RCPAREN ");
-		else if(c=='{') print("LCPAREN ");
-		else if(c=='~') print("TILDE ");
-		else if(c=='%') print("MOD ");
-		else if(isChar(c)){
-			workingOnString=true;
-			currentString= charToString(c);
+		return tok(TOK.less,"",lineNumber,characterNumber);
+	}
+	else if(c=='>'){
+		if(peakNextChar()=='='){
+			getNextToken();	
+			return  tok(TOK.bigequal,"",lineNumber,characterNumber);
+		}
+		return tok(TOK.big,"",lineNumber,characterNumber);
+	}
+	else if(c=='&'){
+		if(peakNextChar()=='&'){
+			getNextChar();
+
+			return tok(TOK.and,"",lineNumber,characterNumber);
+		}
+	}
+	else if(c=='|'){
+		if(peakNextChar()=='|'){
+			getNextChar();
+
+			return tok(TOK.or,"",lineNumber,characterNumber);
+		}
+	}
+	else if(c==';') return tok(TOK.semicolon,"",lineNumber,characterNumber);
+	else if(c=='(') return tok(TOK.lparen,"",lineNumber,characterNumber);
+	else if(c==')') return tok(TOK.rparen,"",lineNumber,characterNumber);
+	else if(c=='}') return tok(TOK.rcparen,"",lineNumber,characterNumber);
+	else if(c=='{') return tok(TOK.lcparen,"",lineNumber,characterNumber);
+	else if(c=='~') return tok(TOK.tilde,"",lineNumber,characterNumber);
+	else if(c=='%') return tok(TOK.mod,"",lineNumber,characterNumber);
+	else if(c==',') return tok(TOK.comma,"",lineNumber,characterNumber);
+	else if(c=='*') return tok(TOK.star,"",lineNumber,characterNumber);
+	else if(c=='-') return tok(TOK.minus,"",lineNumber,characterNumber);
+	else if(c=='+') return tok(TOK.plus,"",lineNumber,characterNumber);
+	else if(c=='.') return tok(TOK.dot,"",lineNumber,characterNumber);
+
+	else if(c==EOF) return tok(TOK.EOF,"",lineNumber,characterNumber);
+	assert(0,intToString(c)~" - "~intToString(lineNumber) ~ ":" ~intToString(characterNumber));
+}
+
+int main(){
+	while(true){
+		tok current= getNextToken();
+		if(current.tok==TOK.EOF) return 0;
+		else if(current.tok==TOK.newline) print("\n"~intToString(lineNumber)~" ");
+		else if(current.tok==TOK.tab) continue;
+		else if(current.tok==TOK.space) continue;
+		else{
+			print(current.tok);
+			if(current.value!=""){
+				print("("~current.value~")");
+			}
+			print(" ");
 
 		}
-		else if(isDigit(c)){
-			workingOnNumber=true;
-			currentNumber=digitToString(charToDigit(c));
-		}
-		else if(c=='$') kill("bum");
-		else if(c==EOF) return 0;
-		else print("? ");
-
 	}
 }
