@@ -258,29 +258,36 @@ bool isKeyword(string s){
 tok getNextToken(){
 	int c=getNextChar();
 	if(c=='/'){
-		//It is a line comment
-		int next=peakNextChar();
-		if(next=='/'){
-			getNextChar();
+
+		//The line begins with / so its either a comment or division
+		c=peakNextChar();
+
+		//If next char is / we have a line comment
+		if(c=='/'){
+
 			//Eat all chars til we reach EndOfLine
 			eatRestOfLine();
 			return getNextToken();
 		}
-		//It is a block comment
-		else if(next=='*'){
+
+		//If next char is * it is a block comment
+		else if(c=='*'){
 
 			//Eat all chars till we reach */
+			c=getNextChar();	
 			while(true){
-				c=getNextChar();	
 				if(c=='*'){
 					c=getNextChar();
 					if(c=='/'){
 						break;		
 					}
 				}
+				else c=getNextChar();
 			}
 			return getNextToken();
 		}
+
+		//If not followed by * or / it must be division
 		else{
 			return tok(TOK.division,"",lineNumber,characterNumber);
 		}
