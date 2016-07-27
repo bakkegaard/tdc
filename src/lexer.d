@@ -293,18 +293,35 @@ tok getNextToken(){
 		}
 	}
 	else if(c=='\''){
+		// ' so we have a character
+
+		//string s to return with token, and error message
 		string s;
 		string error= "Ill formed character";
 		c=getNextChar();
+
+		//Look if we need to escape
 		if(c=='\\'){
 			c=getNextChar();	
+
+			//If next char is \ or ' return that
 			if(c=='\\' || c=='\'') s=charToString(c);
+
+			//If next char is n or t we need also to pass \
 			else if(c=='n' || c=='t') s="\\"~charToString(c);
+
+			//otherwise kill
 			else kill(error~", \\ not followed by \\ ' n or t, but followed by "~charToString(c));
 		}
+
+		//Check that char is between 32 and 126
 		else if(c>=32 && c<=126) s= charToString(c);
+
+		//Otherwise kill
 		else kill(error~", char not between 32 and 126 but is "~intToString(c));
 		c=getNextChar();	
+
+		//Check if character is closed correct otherwise kill
 		if(c!='\'') kill(error~" not ended with ', but ended with "~charToString(c));
 		return tok(TOK.cha,s,lineNumber,characterNumber);
 	}
