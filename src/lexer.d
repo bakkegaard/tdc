@@ -252,6 +252,7 @@ bool isKeyword(string s){
 		(s=="false")||
 		(s=="enum")||
 		(s=="assert")||
+		(s=="struct")||
 		(s=="string");
 }
 
