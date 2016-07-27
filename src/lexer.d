@@ -356,10 +356,15 @@ tok getNextToken(){
 		}
 		return tok(TOK.string,currentString,lineNumber,characterNumber);
 	}
+	
 	else if(isChar(c) || isUnderscore(c)){
+		//If begining is letter or underscore it's either keyword or identifier
 		string currentString= charToString(c);
 		c=peakNextChar();
+
 		while(true){
+
+			//As long as we see letter, underscore or digit
 			if(isChar(c) || isUnderscore(c) || isDigit(c)){
 				getNextChar();
 				currentString=currentString~charToString(c);
@@ -367,32 +372,37 @@ tok getNextToken(){
 			}
 			else break;
 		}
+
+		//We don't support import at the moment, so we just remove it like a comment
 		if(currentString=="import"){
 			eatRestOfLine();
 			return getNextToken();
 		}
+		//Id string is keyword, we return the keyword
 		else if(isKeyword(currentString)){
 			return tok(TOK.keyword,currentString,lineNumber,characterNumber);
 		}
+		//Otherwise it's an identifier
 		else{
-
 			return tok(TOK.identifier,currentString,lineNumber,characterNumber);
 		}
 
 	}
 	else if(isDigit(c)){
+		//It's a number
 		string currentNumber=digitToString(charToDigit(c));
 		c=peakNextChar();
 		while(true){
+
+			//As long as we see digits we continue
 			if(isDigit(c)){
 				getNextChar();
 				currentNumber=currentNumber~digitToString(charToDigit(c));
 				c=peakNextChar();
 			}
-			else{
-				return tok(TOK.number,currentNumber,lineNumber,characterNumber);
-			}
+			else break;
 		}
+		return tok(TOK.number,currentNumber,lineNumber,characterNumber);
 	}
 	//If c is tab continue
 	else if(c=='\t') return tok(TOK.tab,"",lineNumber,characterNumber);
@@ -402,54 +412,83 @@ tok getNextToken(){
 
 	//If c is newline continue
 	else if(c=='\n'){
+
+		//If we hit a newline we count up the line number and reset the character number
 		lineNumber=lineNumber+1;
 		characterNumber=0;
 		return tok(TOK.newline,"",lineNumber,characterNumber);
 	}
 
-	//This could be a comment
 	else if(c=='='){
+
+		//If we see = it's either assign og equal
 		if(peakNextChar()=='='){
 			getNextChar();
+
+			//It's equal
 			return tok(TOK.equal,"",lineNumber,characterNumber);
 		}
+
+		//It's assign
 		else return tok(TOK.assign,"",lineNumber,characterNumber);
 	}
 	else if(c=='!'){
+
+		//If we see ! it must be !=
 		if(peakNextChar()=='='){
 			getNextChar();
 			return tok(TOK.notequal,"",lineNumber,characterNumber);
 		}
+
+		//Otherwise it's and error
 		else kill("! but not followed by =");
 	}
 	else if(c=='<'){
+
+		// < is either less than or less than or equal
 		if(peakNextChar()=='='){
 			getNextToken();	
+
+			//It's <=
 			return  tok(TOK.lessequal,"",lineNumber,characterNumber);
 		}
+
+		//It's <
 		return tok(TOK.less,"",lineNumber,characterNumber);
 	}
 	else if(c=='>'){
+
+		// > is either bigger than or bigger than or equal
 		if(peakNextChar()=='='){
 			getNextToken();	
+
+			//It's >=
 			return  tok(TOK.bigequal,"",lineNumber,characterNumber);
 		}
+		//It's >
 		return tok(TOK.big,"",lineNumber,characterNumber);
 	}
 	else if(c=='&'){
+
+		//Only logical AND is supported
 		if(peakNextChar()=='&'){
 			getNextChar();
 
 			return tok(TOK.and,"",lineNumber,characterNumber);
 		}
+		else kill("Binary AND not supported yet");
 	}
 	else if(c=='|'){
+
+		//Only logical OR is supported
 		if(peakNextChar()=='|'){
 			getNextChar();
 
 			return tok(TOK.or,"",lineNumber,characterNumber);
 		}
+		else kill("Binary OR not supported yet");
 	}
+	//A lot of symbols
 	else if(c==';') return tok(TOK.semicolon,"",lineNumber,characterNumber);
 	else if(c=='(') return tok(TOK.lparen,"",lineNumber,characterNumber);
 	else if(c==')') return tok(TOK.rparen,"",lineNumber,characterNumber);
@@ -463,7 +502,10 @@ tok getNextToken(){
 	else if(c=='+') return tok(TOK.plus,"",lineNumber,characterNumber);
 	else if(c=='.') return tok(TOK.dot,"",lineNumber,characterNumber);
 
+	//End of file
 	else if(c==EOF) return tok(TOK.EOF,"",lineNumber,characterNumber);
+
+	//Assert if nothing matches
 	assert(0,intToString(c)~" - "~intToString(lineNumber) ~ ":" ~intToString(characterNumber));
 }
 
