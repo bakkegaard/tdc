@@ -326,21 +326,32 @@ tok getNextToken(){
 		return tok(TOK.cha,s,lineNumber,characterNumber);
 	}
 	else if(c=='"'){
+		//" so we have a string
 		string currentString="";
+
+		//Iterating through the string
 		while(true){
 			c=getNextChar();
+
+			//If we see a " without \ we are done
+			if(c=='"') break;
+
+			//look if c is \
 			if(c=='\\'){
-				int next=getNextChar();
-				if(next=='"'){
+				c=getNextChar();
+
+				//If next charater is " we add " to the string an continue
+				if(c=='"'){
 					currentString= currentString~charToString('"');
 					continue;
 				}
-				else if(next=='\\'){
-					currentString= currentString~charToString('"');
+				//If we see \ we add \ to the string and continue
+				else if(c=='\\'){
+					currentString= currentString~charToString('\\');
 					continue;
 				}
 			}
-			if(c=='"') break;
+			//add c to string
 			currentString=currentString~charToString(c);
 		}
 		return tok(TOK.string,currentString,lineNumber,characterNumber);
