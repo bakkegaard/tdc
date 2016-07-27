@@ -306,7 +306,7 @@ tok getNextToken(){
 		else kill(error~", char not between 32 and 126 but is "~intToString(c));
 		c=getNextChar();	
 		if(c!='\'') kill(error~" not ended with ', but ended with "~charToString(c));
-		return tok(TOK.cha,"",lineNumber,characterNumber);
+		return tok(TOK.cha,s,lineNumber,characterNumber);
 	}
 	else if(c=='"'){
 		string currentString="";
