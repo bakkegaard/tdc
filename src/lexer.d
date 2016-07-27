@@ -234,6 +234,7 @@ bool isCharOrDigit(int c){
 void eatRestOfLine(){
 	int c=getNextChar();
 	if(c!='\n') eatRestOfLine();
+	else lineNumber=lineNumber+1;
 }
 bool isKeyword(string s){
 	return 
