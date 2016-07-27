@@ -1,5 +1,16 @@
 import std.stdio,core.stdc.stdlib; 
-string s="";
+
+int lineNumber=1;
+int characterNumber=0;
+int nextChar=0;
+
+struct tok{
+	TOK tok;
+	string value;
+	int line;
+	int characterNumber;
+}
+
 enum TOK{
 	lparen,
 	rparen,
@@ -236,16 +247,6 @@ bool isKeyword(string s){
 		(s=="string");
 }
 
-int lineNumber=1;
-int characterNumber=0;
-int nextChar=0;
-
-struct tok{
-	TOK tok;
-	string value;
-	int line;
-	int characterNumber;
-}
 tok getNextToken(){
 	int c=getNextChar();
 	if(c=='/'){
