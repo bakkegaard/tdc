@@ -286,14 +286,19 @@ tok getNextToken(){
 	}
 	else if(c=='\''){
 		string s;
-		if(peakNextChar()=='\\'){
-			getNextChar();	
-			s=charToString(getNextChar());
+		string error= "Ill formed character";
+		c=getNextChar();
+		if(c=='\\'){
+			c=getNextChar();	
+			if(c=='\\' || c=='\'') s=charToString(c);
+			else if(c=='n' || c=='t') s="\\"~charToString(c);
+			else kill(error~", \\ not followed by \\ ' n or t, but followed by "~charToString(c));
 		}
-		s= charToString(getNextChar());
-		getNextChar();	
+		else if(c>=32 && c<=126) s= charToString(c);
+		else kill(error~", char not between 32 and 126 but is "~intToString(c));
+		c=getNextChar();	
+		if(c!='\'') kill(error~" not ended with ', but ended with "~charToString(c));
 		return tok(TOK.cha,"",lineNumber,characterNumber);
-
 	}
 	else if(c=='"'){
 		string currentString="";
