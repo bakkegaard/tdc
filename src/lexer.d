@@ -307,7 +307,7 @@ tok getNextToken(){
 			c=getNextChar();
 			if(c=='\\'){
 				int next=getNextChar();
-				if(next=='\"'){
+				if(next=='"'){
 					currentString= currentString~charToString('"');
 					continue;
 				}
