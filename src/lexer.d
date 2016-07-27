@@ -50,6 +50,8 @@ string charToString(int c){
 	if(c==32) return " ";
 	else if(c==33) return "!";
 	else if(c==34) return "\"";
+	else if(c==35) return "#";
+	else if(c==36) return "$";
 	else if(c==37) return "%";
 	else if(c==38) return "&";
 	else if(c==39) return "'";
@@ -102,7 +104,12 @@ string charToString(int c){
 	else if(c==88) return "Z";
 	else if(c==89) return "Y";
 	else if(c==90) return "Z";
+	else if(c==91) return "[";
 	else if(c==92) return "\\";
+	else if(c==93) return "]";
+	else if(c==94) return "^";
+	else if(c==95) return "_";
+	else if(c==96) return "`";
 	else if(c==97) return "a";
 	else if(c==98) return "b";
 	else if(c==99) return "c";
